@@ -1,0 +1,70 @@
+# Maven / Java
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# Maven wrapper generated files
+.mvn/wrapper/maven-wrapper.jar
+
+# IDEs / Editors
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker / DevContainer temporary files
+*.pid
+*.seed
+*.pid.lock
+
+# Logs
+logs/
+*.out
+*.err
+
+# Environment files / secrets
+.env
+.env.*
+!.env.example
+
+# PostgreSQL / database dumps
+*.dump
+*.sql.gz
+*.backup
+
+# Kafka local data
+kafka-logs/
+zookeeper-data/
+zookeeper-logs/
+connect-offsets/
+connect-status/
+connect-configs/
+
+# Generated files
+generated/
+tmp/
+temp/
+
+# VS Code Java extension
+.factorypath
+
+# Test reports / coverage
+surefire-reports/
+failsafe-reports/
+coverage/
+jacoco.exec
+*.exec
+
+# Mac / Linux swap files
+*.swp
+*.swo
+*~
