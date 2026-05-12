@@ -5,6 +5,8 @@ public class AverageAggregate {
     public double total;
     public long count;
 
+
+
     public AverageAggregate() {
         this.total = 0.0;
         this.count = 0;

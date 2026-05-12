@@ -10,6 +10,9 @@ public class TicketSale {
     public double ticketPrice;
     public int quantity;
 
+    public TicketSale() {
+    }
+
     public TicketSale(String saleId, String eventId, String eventName, String city,
                       String category, String ticketType, double ticketPrice, int quantity) {
         this.saleId = saleId;

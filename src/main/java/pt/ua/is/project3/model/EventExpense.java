@@ -7,6 +7,9 @@ public class EventExpense {
     public String expenseType;
     public double cost;
 
+    public EventExpense() {
+    }
+
     public EventExpense(String expenseId, String eventId, String eventName,
                         String expenseType, double cost) {
         this.expenseId = expenseId;
