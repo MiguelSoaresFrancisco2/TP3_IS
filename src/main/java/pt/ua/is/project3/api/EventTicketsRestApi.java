@@ -87,6 +87,12 @@ public class EventTicketsRestApi {
     }
 
     private static Connection getConnection() throws SQLException {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("PostgreSQL JDBC Driver not found in classpath", e);
+        }
+
         return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
     }
 

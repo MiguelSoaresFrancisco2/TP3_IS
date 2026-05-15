@@ -214,20 +214,23 @@ public class EventTicketsStreams {
         * Solved with reduce().
         */
         KTable<String, ResultRecord> highestProfitEvent = profitPerEvent
-                .toStream()
-                .map((eventId, profit) -> KeyValue.pair(HIGHEST_PROFIT_EVENT_TOPIC, profit))
-                .groupByKey(Grouped.with(Serdes.String(), resultRecordSerde))
-                .reduce((oldValue, newValue) -> {
-                if (newValue.value > oldValue.value) {
-                        return newValue;
-                }
-                return oldValue;
-                });
+        .toStream()
+        .map((eventId, profit) -> KeyValue.pair("HIGHEST_PROFIT_EVENT", profit))
+        .groupByKey(Grouped.with(Serdes.String(), resultRecordSerde))
+        .reduce((oldValue, newValue) -> {
+            ResultRecord best = newValue.value > oldValue.value ? newValue : oldValue;
+
+            return new ResultRecord(
+                    "HIGHEST_PROFIT_EVENT",
+                    best.eventName,
+                    best.value
+            );
+        });
 
         highestProfitEvent
-                .toStream()
-                .mapValues(EventTicketsStreams::toConnectJson)
-                .to(HIGHEST_PROFIT_EVENT_TOPIC, Produced.with(Serdes.String(), Serdes.String()));
+        .toStream()
+        .mapValues(EventTicketsStreams::toConnectJson)
+        .to(HIGHEST_PROFIT_EVENT_TOPIC, Produced.with(Serdes.String(), Serdes.String()));
 
                 /*
          * Requirement 8:
