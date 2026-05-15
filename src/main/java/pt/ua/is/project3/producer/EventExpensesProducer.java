@@ -39,7 +39,7 @@ public class EventExpensesProducer {
             String eventId = selected[0];
             String eventName = selected[1];
             String expenseType = expenseTypes[random.nextInt(expenseTypes.length)];
-            double cost = 100 + random.nextInt(900);
+            double cost = 50 + random.nextInt(200);
 
             EventExpense expense = new EventExpense(
                     UUID.randomUUID().toString(),

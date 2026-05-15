@@ -43,7 +43,7 @@ public class TicketSalesProducer {
             double basePrice = Double.parseDouble(selected[4]);
 
             String ticketType = ticketTypes[random.nextInt(ticketTypes.length)];
-            int quantity = random.nextInt(4) + 1;
+            int quantity = random.nextInt(8) + 3;
 
             double multiplier;
 
