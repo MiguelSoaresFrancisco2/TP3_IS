@@ -18,6 +18,7 @@ import java.util.UUID;
 public class TicketSalesProducer {
 
     private static final String TOPIC = "Proj3TicketSalesTopic";
+    private static final long RELOAD_INTERVAL_MS = 30_000; // 30 segundos
 
     private static final String DB_URL =
             System.getenv().getOrDefault(
@@ -66,10 +67,27 @@ public class TicketSalesProducer {
 
         String[] ticketTypes = {"NORMAL", "VIP", "STUDENT"};
 
+        long lastReloadTime = System.currentTimeMillis();
+
         System.out.println("Loaded " + events.size() + " events from database.");
         System.out.println("TicketSalesProducer started.");
 
         while (true) {
+            long now = System.currentTimeMillis();
+
+            if (now - lastReloadTime >= RELOAD_INTERVAL_MS) {
+                List<EventInfo> updatedEvents = loadEventsFromDatabase();
+
+                if (!updatedEvents.isEmpty()) {
+                    events = updatedEvents;
+                    System.out.println("Reloaded " + events.size() + " events from database.");
+                } else {
+                    System.out.println("Reload skipped: database returned no events.");
+                }
+
+                lastReloadTime = now;
+            }
+
             EventInfo selected = events.get(random.nextInt(events.size()));
 
             String eventId = selected.eventId;
