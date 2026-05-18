@@ -5,6 +5,12 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import pt.ua.is.project3.model.TicketSale;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
@@ -13,7 +19,42 @@ public class TicketSalesProducer {
 
     private static final String TOPIC = "Proj3TicketSalesTopic";
 
+    private static final String DB_URL =
+            System.getenv().getOrDefault(
+                    "DB_URL",
+                    "jdbc:postgresql://database:5432/project3"
+            );
+
+    private static final String DB_USER =
+            System.getenv().getOrDefault("DB_USER", "postgres");
+
+    private static final String DB_PASSWORD =
+            System.getenv().getOrDefault("DB_PASSWORD", "nopass");
+
+    private static class EventInfo {
+        String eventId;
+        String eventName;
+        String city;
+        String category;
+        double baseTicketPrice;
+
+        EventInfo(String eventId, String eventName, String city, String category, double baseTicketPrice) {
+            this.eventId = eventId;
+            this.eventName = eventName;
+            this.city = city;
+            this.category = category;
+            this.baseTicketPrice = baseTicketPrice;
+        }
+    }
+
     public static void main(String[] args) throws Exception {
+        List<EventInfo> events = loadEventsFromDatabase();
+
+        if (events.isEmpty()) {
+            System.err.println("No events found in database. Producer will stop.");
+            return;
+        }
+
         Properties props = new Properties();
         props.put("bootstrap.servers", "broker1:9092");
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
@@ -23,24 +64,19 @@ public class TicketSalesProducer {
         Gson gson = new Gson();
         Random random = new Random();
 
-        String[][] events = {
-                {"E1", "Tech Conference 2026", "Aveiro", "Technology", "40.0"},
-                {"E2", "Rock Festival", "Porto", "Music", "55.0"},
-                {"E3", "Football Match", "Lisboa", "Sports", "30.0"},
-                {"E4", "Comedy Night", "Coimbra", "Entertainment", "25.0"},
-                {"E5", "Jazz Festival", "Braga", "Music", "35.0"}
-        };
-
         String[] ticketTypes = {"NORMAL", "VIP", "STUDENT"};
 
-        while (true) {
-            String[] selected = events[random.nextInt(events.length)];
+        System.out.println("Loaded " + events.size() + " events from database.");
+        System.out.println("TicketSalesProducer started.");
 
-            String eventId = selected[0];
-            String eventName = selected[1];
-            String city = selected[2];
-            String category = selected[3];
-            double basePrice = Double.parseDouble(selected[4]);
+        while (true) {
+            EventInfo selected = events.get(random.nextInt(events.size()));
+
+            String eventId = selected.eventId;
+            String eventName = selected.eventName;
+            String city = selected.city;
+            String category = selected.category;
+            double basePrice = selected.baseTicketPrice;
 
             String ticketType = ticketTypes[random.nextInt(ticketTypes.length)];
             int quantity = random.nextInt(8) + 3;
@@ -80,5 +116,33 @@ public class TicketSalesProducer {
 
             Thread.sleep(1000);
         }
+    }
+
+    private static List<EventInfo> loadEventsFromDatabase() throws Exception {
+        List<EventInfo> events = new ArrayList<>();
+
+        String sql = """
+                SELECT event_id, event_name, city, category, base_ticket_price
+                FROM events
+                ORDER BY event_id
+                """;
+
+        try (
+                Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()
+        ) {
+            while (rs.next()) {
+                events.add(new EventInfo(
+                        rs.getString("event_id"),
+                        rs.getString("event_name"),
+                        rs.getString("city"),
+                        rs.getString("category"),
+                        rs.getBigDecimal("base_ticket_price").doubleValue()
+                ));
+            }
+        }
+
+        return events;
     }
 }
